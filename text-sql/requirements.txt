@@ -1,0 +1,7 @@
+gradio>=4.0.0
+transformers>=4.40.0
+torch
+sentencepiece
+protobuf
+accelerate
+pandas
