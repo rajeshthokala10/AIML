@@ -1,0 +1,5 @@
+# Install after requirements.txt for fine-tuning and benchmarking
+peft>=0.10.0
+datasets>=2.14.0
+# Optional: for 4-bit QLoRA (pip install bitsandbytes)
+# bitsandbytes>=0.41.0

@@ -1,0 +1,171 @@
+{
+  "model_id": "cssupport/t5-small-awesome-text-to-sql",
+  "eval_file": "/Users/rajeshthokala/Documents/Practice_AIML/AIML/text-sql/data/eval_employee.jsonl",
+  "n_samples": 20,
+  "exact_match_count": 0,
+  "exact_match_pct": 0.0,
+  "execution_match_count": 1,
+  "execution_match_pct": 5.0,
+  "results": [
+    {
+      "question": "Show all departments",
+      "gold_sql": "SELECT * FROM departments",
+      "pred_sql": "SELECT dept_name, department, name FROM departments",
+      "exact_match": false,
+      "execution_match": false,
+      "exec_note": "pred_error: no such column: department"
+    },
+    {
+      "question": "List all employees",
+      "gold_sql": "SELECT * FROM employees",
+      "pred_sql": "SELECT employee_employees.employee_id FROM employees AS T1 JOIN salaries AS T2 ON T1.emp_id = T2.emp_id JOIN departments AS T3 ON T3.dept_id = T3.dept_id",
+      "exact_match": false,
+      "execution_match": false,
+      "exec_note": "pred_error: no such column: employee_employees.employee_id"
+    },
+    {
+      "question": "What are all department names?",
+      "gold_sql": "SELECT dept_name FROM departments",
+      "pred_sql": "SELECT dept_name, title FROM departments",
+      "exact_match": false,
+      "execution_match": false,
+      "exec_note": "pred_error: no such column: title"
+    },
+    {
+      "question": "Count how many employees there are",
+      "gold_sql": "SELECT COUNT(*) FROM employees",
+      "pred_sql": "SELECT T2.emp_id, COUNT(*) FROM employees AS T1 JOIN salaries AS T2 ON T1.emp_id = T2.emp_id GROUP BY T2.emp_id",
+      "exact_match": false,
+      "execution_match": false,
+      "exec_note": "result_mismatch"
+    },
+    {
+      "question": "List employee first name and last name",
+      "gold_sql": "SELECT first_name, last_name FROM employees",
+      "pred_sql": "SELECT first_name, last_name FROM employees AS T1 JOIN salaries AS T2 ON T1.emp_id = T2.emp_id JOIN departments AS T3 ON T3.dept_id = T3.dept_id",
+      "exact_match": false,
+      "execution_match": false,
+      "exec_note": "result_mismatch"
+    },
+    {
+      "question": "Show employees in Engineering",
+      "gold_sql": "SELECT e.* FROM employees e JOIN departments d ON e.dept_id = d.dept_id WHERE d.dept_name = 'Engineering'",
+      "pred_sql": "SELECT employee.emp_id FROM employees AS T1 JOIN departments AS T2 ON T1.dept_id = T2.dept_id WHERE T2.dept_name = 'Engineer'",
+      "exact_match": false,
+      "execution_match": false,
+      "exec_note": "pred_error: no such column: employee.emp_id"
+    },
+    {
+      "question": "List employees in the Sales department",
+      "gold_sql": "SELECT e.* FROM employees e JOIN departments d ON e.dept_id = d.dept_id WHERE d.dept_name = 'Sales'",
+      "pred_sql": "SELECT employee.emp_id FROM employees AS T1 JOIN departments AS T2 ON T1.dept_id = T2.dept_id WHERE T2.dept_name = \"Sales\"",
+      "exact_match": false,
+      "execution_match": false,
+      "exec_note": "pred_error: no such column: employee.emp_id"
+    },
+    {
+      "question": "Employees hired after 2021",
+      "gold_sql": "SELECT * FROM employees WHERE hire_date > '2021-12-31'",
+      "pred_sql": "SELECT employee.emp_id FROM employees WHERE hire_date > 2021",
+      "exact_match": false,
+      "execution_match": false,
+      "exec_note": "pred_error: no such column: employee.emp_id"
+    },
+    {
+      "question": "Show all salaries",
+      "gold_sql": "SELECT * FROM salaries",
+      "pred_sql": "SELECT salary, SAL(salary) FROM employees AS T1 JOIN salaries AS T2 ON T1.emp_id = T2.emp_id GROUP BY T1.emp_id",
+      "exact_match": false,
+      "execution_match": false,
+      "exec_note": "pred_error: no such function: SAL"
+    },
+    {
+      "question": "What is the average salary?",
+      "gold_sql": "SELECT AVG(salary) FROM salaries",
+      "pred_sql": "SELECT AVG(salary) FROM employees AS T1 JOIN salaries AS T2 ON T1.emp_id = T2.emp_id GROUP BY T1.emp_id",
+      "exact_match": false,
+      "execution_match": false,
+      "exec_note": "result_mismatch"
+    },
+    {
+      "question": "Top 3 highest salaries with employee names",
+      "gold_sql": "SELECT e.first_name, e.last_name, s.salary FROM employees e JOIN salaries s ON e.emp_id = s.emp_id ORDER BY s.salary DESC LIMIT 3",
+      "pred_sql": "SELECT employee.employee_name, MAX(salary) FROM employees AS T1 JOIN salaries AS T2 ON T1.emp_id = T2.emp_id GROUP BY T1.emp_id ORDER BY employee DESC LIMIT 3",
+      "exact_match": false,
+      "execution_match": false,
+      "exec_note": "pred_error: no such column: employee.employee_name"
+    },
+    {
+      "question": "List employees with their department name",
+      "gold_sql": "SELECT e.first_name, e.last_name, d.dept_name FROM employees e JOIN departments d ON e.dept_id = d.dept_id",
+      "pred_sql": "SELECT dept_name, employee.last_name, employee.emp_id FROM employees AS T1 JOIN departments AS T2 ON T1.dept_id = T2.dept_id",
+      "exact_match": false,
+      "execution_match": false,
+      "exec_note": "pred_error: no such column: employee.last_name"
+    },
+    {
+      "question": "How many employees are in each department?",
+      "gold_sql": "SELECT d.dept_name, COUNT(e.emp_id) FROM departments d LEFT JOIN employees e ON d.dept_id = e.dept_id GROUP BY d.dept_id, d.dept_name",
+      "pred_sql": "SELECT dept_name, COUNT(*) FROM employees AS T1 JOIN departments AS T2 ON T1.dept_id = T2.dept_id GROUP BY dept_name",
+      "exact_match": false,
+      "execution_match": true,
+      "exec_note": "match"
+    },
+    {
+      "question": "Average salary by department",
+      "gold_sql": "SELECT d.dept_name, AVG(s.salary) FROM departments d JOIN employees e ON d.dept_id = e.dept_id JOIN salaries s ON e.emp_id = s.emp_id GROUP BY d.dept_id, d.dept_name",
+      "pred_sql": "SELECT department, AVG(salary) FROM employees GROUP BY department",
+      "exact_match": false,
+      "execution_match": false,
+      "exec_note": "pred_error: no such column: department"
+    },
+    {
+      "question": "Employees with salary greater than 1800000",
+      "gold_sql": "SELECT e.* FROM employees e JOIN salaries s ON e.emp_id = s.emp_id WHERE s.salary > 1800000",
+      "pred_sql": "SELECT employee_id, salary FROM employees WHERE salary > 1800000",
+      "exact_match": false,
+      "execution_match": false,
+      "exec_note": "pred_error: no such column: employee_id"
+    },
+    {
+      "question": "List department locations",
+      "gold_sql": "SELECT dept_name, location FROM departments",
+      "pred_sql": "SELECT location, COUNT(location) FROM departments GROUP BY location",
+      "exact_match": false,
+      "execution_match": false,
+      "exec_note": "result_mismatch"
+    },
+    {
+      "question": "Find employees whose last name is Rao",
+      "gold_sql": "SELECT * FROM employees WHERE last_name = 'Rao'",
+      "pred_sql": "SELECT employee_id FROM employees WHERE last_name = \"Rao\"",
+      "exact_match": false,
+      "execution_match": false,
+      "exec_note": "pred_error: no such column: employee_id"
+    },
+    {
+      "question": "Show distinct job titles",
+      "gold_sql": "SELECT DISTINCT title FROM employees",
+      "pred_sql": "SELECT DISTINCT T1.title FROM job AS T1 JOIN employees AS T2 ON T1.dept_id = T2.dept_id",
+      "exact_match": false,
+      "execution_match": false,
+      "exec_note": "pred_error: no such table: job"
+    },
+    {
+      "question": "Employees hired in 2022",
+      "gold_sql": "SELECT * FROM employees WHERE hire_date >= '2022-01-01' AND hire_date <= '2022-12-31'",
+      "pred_sql": "SELECT hire_date, COUNT(rental_date) FROM employees WHERE hire_date = 2022",
+      "exact_match": false,
+      "execution_match": false,
+      "exec_note": "pred_error: no such column: rental_date"
+    },
+    {
+      "question": "Total salary cost per department",
+      "gold_sql": "SELECT d.dept_name, SUM(s.salary) FROM departments d JOIN employees e ON d.dept_id = e.dept_id JOIN salaries s ON e.emp_id = s.emp_id GROUP BY d.dept_id, d.dept_name",
+      "pred_sql": "SELECT dept_name, SUM(salary) FROM employees AS T1 JOIN departments AS T2 ON T1.dept_id = T2.dept_id GROUP BY dept_name",
+      "exact_match": false,
+      "execution_match": false,
+      "exec_note": "pred_error: no such column: salary"
+    }
+  ]
+}

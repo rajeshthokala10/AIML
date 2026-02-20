@@ -8,6 +8,8 @@ from typing import Optional
 
 os.environ.setdefault("HF_HUB_DISABLE_IMPLICIT_SAFETENSORS_CONVERSION", "1")
 os.environ.setdefault("HF_HUB_DISABLE_TELEMETRY", "1")
+# Prevents the background safetensors conversion thread that can raise JSONDecodeError
+os.environ.setdefault("DISABLE_SAFETENSORS_CONVERSION", "1")
 
 import torch
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
@@ -78,8 +80,36 @@ def _replace_generic_table(sql: str, table_name: str) -> str:
     return re.sub(r"(?is)\bfrom\s+table\b", f"FROM {table_name}", sql)
 
 
+def _is_peft_adapter_dir(model_id: str) -> bool:
+    if not os.path.isdir(model_id):
+        return False
+    return (
+        os.path.exists(os.path.join(model_id, "adapter_config.json"))
+        or os.path.exists(os.path.join(model_id, "base_model_id.txt"))
+    )
+
+
 @lru_cache(maxsize=1)
 def _load(model_id: str = DEFAULT_MODEL_ID):
+    if _is_peft_adapter_dir(model_id):
+        try:
+            from peft import PeftModel
+        except ImportError:
+            raise ImportError("PEFT is required to load a fine-tuned adapter. Install with: pip install peft")
+        base_id = DEFAULT_MODEL_ID
+        base_path = os.path.join(model_id, "base_model_id.txt")
+        if os.path.exists(base_path):
+            with open(base_path) as f:
+                base_id = f.read().strip()
+        elif os.path.exists(os.path.join(model_id, "adapter_config.json")):
+            import json
+            with open(os.path.join(model_id, "adapter_config.json")) as f:
+                base_id = json.load(f).get("base_model_name_or_path", base_id)
+        tokenizer = AutoTokenizer.from_pretrained(model_id)
+        model = AutoModelForSeq2SeqLM.from_pretrained(base_id)
+        model = PeftModel.from_pretrained(model, model_id)
+        model.eval()
+        return tokenizer, model
     tokenizer = AutoTokenizer.from_pretrained(model_id)
     model = AutoModelForSeq2SeqLM.from_pretrained(model_id)
     model.eval()
@@ -93,15 +123,38 @@ def generate_sql(
     model_id: str = DEFAULT_MODEL_ID,
     max_new_tokens: int = 128,
     table_hint: Optional[str] = "employees",
+    use_rag: bool = False,
+    rag_examples_path: Optional[str] = None,
+    rag_top_k: int = 3,
 ) -> GenerationResult:
     tokenizer, model = _load(model_id)
 
-    # This model family expects "tables:" + CREATE TABLE statements + "query for:"
-    prompt = (
-        "tables:\n"
-        f"{schema_prompt}\n"
-        f"query for: {question}\n"
-    )
+    # Optional RAG: prepend few-shot (query for: Q -> SQL) from similar examples
+    if use_rag and rag_examples_path:
+        try:
+            from text2sql_demo.rag import get_similar_examples, build_few_shot_prompt
+            similar = get_similar_examples(question, rag_examples_path, top_k=rag_top_k)
+            if similar:
+                prompt = build_few_shot_prompt(schema_prompt, question, similar)
+            else:
+                prompt = (
+                    "tables:\n"
+                    f"{schema_prompt}\n"
+                    f"query for: {question}\n"
+                )
+        except Exception:
+            prompt = (
+                "tables:\n"
+                f"{schema_prompt}\n"
+                f"query for: {question}\n"
+            )
+    else:
+        # This model family expects "tables:" + CREATE TABLE statements + "query for:"
+        prompt = (
+            "tables:\n"
+            f"{schema_prompt}\n"
+            f"query for: {question}\n"
+        )
 
     inputs = tokenizer([prompt], return_tensors="pt", truncation=True)
 

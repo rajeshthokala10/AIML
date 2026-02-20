@@ -85,6 +85,9 @@ def init_employee_db(db_path: str) -> DbInfo:
                     (4, "Rohit", "Iyer", "HR Specialist", "2019-03-10", 30, "rohit.iyer@corp.com"),
                     (5, "Meera", "Kulkarni", "Accountant", "2023-01-05", 40, "meera.k@corp.com"),
                     (6, "Arjun", "Patel", "ML Engineer", "2024-07-08", 10, "arjun.patel@corp.com"),
+                    (7, "Priya", "Kumar", "Frontend Engineer", "2023-04-12", 10, "priya.kumar@corp.com"),
+                    (8, "Suresh", "Reddy", "DevOps Engineer", "2022-11-01", 10, "suresh.reddy@corp.com"),
+                    (9, "Anita", "Desai", "QA Engineer", "2024-01-15", 10, "anita.desai@corp.com"),
                 ],
             )
 
@@ -99,6 +102,9 @@ def init_employee_db(db_path: str) -> DbInfo:
                     (4, "2024-01-01", 1200000),
                     (5, "2024-01-01", 1300000),
                     (6, "2024-08-01", 2000000),
+                    (7, "2024-01-01", 1700000),
+                    (8, "2024-01-01", 1900000),
+                    (9, "2024-01-01", 1500000),
                 ],
             )
 

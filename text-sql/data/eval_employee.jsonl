@@ -1,0 +1,20 @@
+{"question": "Show all departments", "gold_sql": "SELECT * FROM departments"}
+{"question": "List all employees", "gold_sql": "SELECT * FROM employees"}
+{"question": "What are all department names?", "gold_sql": "SELECT dept_name FROM departments"}
+{"question": "Count how many employees there are", "gold_sql": "SELECT COUNT(*) FROM employees"}
+{"question": "List employee first name and last name", "gold_sql": "SELECT first_name, last_name FROM employees"}
+{"question": "Show employees in Engineering", "gold_sql": "SELECT e.* FROM employees e JOIN departments d ON e.dept_id = d.dept_id WHERE d.dept_name = 'Engineering'"}
+{"question": "List employees in the Sales department", "gold_sql": "SELECT e.* FROM employees e JOIN departments d ON e.dept_id = d.dept_id WHERE d.dept_name = 'Sales'"}
+{"question": "Employees hired after 2021", "gold_sql": "SELECT * FROM employees WHERE hire_date > '2021-12-31'"}
+{"question": "Show all salaries", "gold_sql": "SELECT * FROM salaries"}
+{"question": "What is the average salary?", "gold_sql": "SELECT AVG(salary) FROM salaries"}
+{"question": "Top 3 highest salaries with employee names", "gold_sql": "SELECT e.first_name, e.last_name, s.salary FROM employees e JOIN salaries s ON e.emp_id = s.emp_id ORDER BY s.salary DESC LIMIT 3"}
+{"question": "List employees with their department name", "gold_sql": "SELECT e.first_name, e.last_name, d.dept_name FROM employees e JOIN departments d ON e.dept_id = d.dept_id"}
+{"question": "How many employees are in each department?", "gold_sql": "SELECT d.dept_name, COUNT(e.emp_id) FROM departments d LEFT JOIN employees e ON d.dept_id = e.dept_id GROUP BY d.dept_id, d.dept_name"}
+{"question": "Average salary by department", "gold_sql": "SELECT d.dept_name, AVG(s.salary) FROM departments d JOIN employees e ON d.dept_id = e.dept_id JOIN salaries s ON e.emp_id = s.emp_id GROUP BY d.dept_id, d.dept_name"}
+{"question": "Employees with salary greater than 1800000", "gold_sql": "SELECT e.* FROM employees e JOIN salaries s ON e.emp_id = s.emp_id WHERE s.salary > 1800000"}
+{"question": "List department locations", "gold_sql": "SELECT dept_name, location FROM departments"}
+{"question": "Find employees whose last name is Rao", "gold_sql": "SELECT * FROM employees WHERE last_name = 'Rao'"}
+{"question": "Show distinct job titles", "gold_sql": "SELECT DISTINCT title FROM employees"}
+{"question": "Employees hired in 2022", "gold_sql": "SELECT * FROM employees WHERE hire_date >= '2022-01-01' AND hire_date <= '2022-12-31'"}
+{"question": "Total salary cost per department", "gold_sql": "SELECT d.dept_name, SUM(s.salary) FROM departments d JOIN employees e ON d.dept_id = e.dept_id JOIN salaries s ON e.emp_id = s.emp_id GROUP BY d.dept_id, d.dept_name"}

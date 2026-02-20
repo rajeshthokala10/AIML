@@ -5,3 +5,4 @@ sentencepiece
 protobuf
 accelerate
 pandas
+sentence-transformers>=2.2.0

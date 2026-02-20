@@ -1,0 +1,7 @@
+{"question": "how many employees exist", "predicted_sql": "SELECT employee, COUNT(*) FROM employees WHERE NOT employee_id IN (SELECT employee_id FROM employees)", "accepted": false, "correct_sql": ""}
+{"question": "Show all departments", "predicted_sql": "SELECT dept_name, department, name FROM departments", "accepted": true, "correct_sql": ""}
+{"question": "List all employees", "predicted_sql": "SELECT employee_employees.employee_id FROM employees AS T1 JOIN salaries AS T2 ON T1.emp_id = T2.emp_id JOIN departments AS T3 ON T3.dept_id = T3.dept_id", "accepted": false, "correct_sql": ""}
+{"question": "List all employees", "predicted_sql": "SELECT employee_employees.employee_id FROM employees AS T1 JOIN salaries AS T2 ON T1.emp_id = T2.emp_id JOIN departments AS T3 ON T3.dept_id = T3.dept_id", "accepted": false, "correct_sql": ""}
+{"question": "List all employees", "predicted_sql": "SELECT employee_employees.employee_id FROM employees AS T1 JOIN salaries AS T2 ON T1.emp_id = T2.emp_id JOIN departments AS T3 ON T3.dept_id = T3.dept_id", "accepted": false, "correct_sql": ""}
+{"question": "List all employees", "predicted_sql": "SELECT employee_employees.employee_id FROM employees AS T1 JOIN salaries AS T2 ON T1.emp_id = T2.emp_id JOIN departments AS T3 ON T3.dept_id = T3.dept_id", "accepted": false, "correct_sql": ""}
+{"question": "Total salary cost per department", "predicted_sql": "SELECT dept_name, SUM(salary) FROM employees AS T1 JOIN departments AS T2 ON T1.dept_id = T2.dept_id GROUP BY dept_name", "accepted": true, "correct_sql": ""}
