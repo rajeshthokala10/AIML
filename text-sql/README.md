@@ -20,6 +20,23 @@ pip install sentence-transformers        # RAG at inference (or already in requi
 
 ---
 
+## Benchmark results (before vs after fine-tuning)
+
+Evaluation on **20 questions** from `data/eval_employee.jsonl` (employee schema: departments, employees, salaries).
+
+| Metric              | Before fine-tuning (baseline) | After LoRA fine-tuning |
+|---------------------|-------------------------------|--------------------------|
+| **Model**           | `cssupport/t5-small-awesome-text-to-sql` | Same base + LoRA adapter (`models/t5-text2sql-employee-lora`) |
+| **Exact match**      | 0 / 20 (**0%**)              | 3 / 20 (**15%**)        |
+| **Execution match** | 1 / 20 (**5%**)               | 4 / 20 (**20%**)        |
+
+- **Exact match**: generated SQL string equals gold SQL.
+- **Execution match**: generated SQL runs and returns the same result set as gold (recommended metric).
+
+Results files: `results_baseline.json`, `results_after_lora.json`. Run `python compare_benchmark_results.py` to compare.
+
+---
+
 ## Running steps (full workflow)
 
 ### 1. Run the app (no fine-tuning)
