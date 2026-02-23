@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text-SQL System Design — Diagrams</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: #f8f9fa;
+      color: #1a1a1a;
+    }
+    h1 {
+      font-size: 1.75rem;
+      margin-bottom: 0.5rem;
+      color: #0d47a1;
+    }
+    .subtitle { color: #555; margin-bottom: 2rem; }
+    section {
+      background: #fff;
+      border-radius: 8px;
+      padding: 1.5rem 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    }
+    section h2 {
+      font-size: 1.25rem;
+      margin: 0 0 1rem 0;
+      color: #1565c0;
+      border-bottom: 2px solid #e3f2fd;
+      padding-bottom: 0.5rem;
+    }
+    .mermaid {
+      display: flex;
+      justify-content: center;
+      margin: 1rem 0;
+      min-height: 200px;
+    }
+    .mermaid svg { max-width: 100%; height: auto; }
+  </style>
+</head>
+<body>
+  <h1>Text-SQL System Design</h1>
+  <p class="subtitle">Diagrams: Tech stack · High-level · Low-level · Data flow</p>
+
+  <section>
+    <h2>1. Tech Stack Diagram</h2>
+    <p>All technologies used across presentation, application, ML, data, training, and support layers.</p>
+    <div class="mermaid">
+flowchart TB
+    subgraph UI["Presentation Layer"]
+        Gradio["Gradio"]
+    end
+    subgraph App["Application Layer"]
+        Python["Python 3"]
+        Pandas["Pandas"]
+    end
+    subgraph ML["ML / Inference Layer"]
+        PyTorch["PyTorch"]
+        Transformers["Transformers"]
+        T5["T5 Seq2Seq"]
+        PEFT["PEFT LoRA/QLoRA"]
+        SentenceTransformers["sentence-transformers"]
+    end
+    subgraph Data["Data & Storage"]
+        SQLite["SQLite"]
+        JSONL["JSONL"]
+    end
+    subgraph Training["Training Pipeline"]
+        Datasets["datasets"]
+        Seq2SeqTrainer["Seq2SeqTrainer"]
+        LoRA["LoRA Config"]
+    end
+    subgraph Support["Support"]
+        SentencePiece["sentencepiece"]
+        Protobuf["protobuf"]
+        Accelerate["accelerate"]
+    end
+    Gradio --> Python
+    Python --> Pandas
+    Python --> PyTorch
+    Python --> Transformers
+    Transformers --> T5
+    Transformers --> PEFT
+    PEFT --> LoRA
+    Python --> SentenceTransformers
+    Python --> SQLite
+    Python --> JSONL
+    Transformers --> SentencePiece
+    Transformers --> Protobuf
+    PyTorch --> Accelerate
+    Training --> Datasets
+    Training --> Seq2SeqTrainer
+    Training --> PEFT
+    </div>
+  </section>
+
+  <section>
+    <h2>2. High-Level System Diagram</h2>
+    <p>End-to-end flow: User question → Gradio → App → Model / RAG / DB → Response.</p>
+    <div class="mermaid">
+flowchart LR
+    subgraph User["User"]
+        Q["Question"]
+        R["SQL + results"]
+    end
+    subgraph System["Text-SQL System"]
+        UI["Gradio UI"]
+        App["App logic"]
+        Model["Text-to-SQL model"]
+        RAG["RAG"]
+        DB["SQLite DB"]
+    end
+    subgraph Data["Data & Models"]
+        Schema["Schema"]
+        Examples["train_employee.jsonl"]
+        EmployeesDB["employees.db"]
+        Adapter["LoRA adapter"]
+    end
+    Q --> UI
+    UI --> App
+    App --> Schema
+    App --> RAG
+    RAG --> Examples
+    App --> Model
+    Model --> Adapter
+    App --> DB
+    DB --> EmployeesDB
+    DB --> UI
+    Model --> UI
+    UI --> R
+    </div>
+  </section>
+
+  <section>
+    <h2>3. Low-Level System Diagram</h2>
+    <p>Entry points, text2sql_demo package, external models, data files, and training pipeline.</p>
+    <div class="mermaid">
+flowchart TB
+    subgraph Entry["Entry points"]
+        app_py["app.py"]
+        run_benchmark["run_benchmark.py"]
+        finetune_lora["finetune_lora.py"]
+        merge_feedback["merge_feedback_into_train.py"]
+        seed_db["seed_employee_db.py"]
+        compare_bench["compare_benchmark_results.py"]
+    end
+    subgraph text2sql_demo["text2sql_demo"]
+        model_py["model.py"]
+        rag_py["rag.py"]
+        db_py["db.py"]
+    end
+    subgraph External["External / artifacts"]
+        HF_Model["T5 base model"]
+        LoRA_dir["LoRA adapter dir"]
+    end
+    subgraph Data_Files["Data files"]
+        employees_db["employees.db"]
+        train_jsonl["train_employee.jsonl"]
+        eval_jsonl["eval_employee.jsonl"]
+        feedback_jsonl["feedback.jsonl"]
+    end
+    subgraph Training_Flow["Training"]
+        load_jsonl["load_jsonl"]
+        Dataset["Dataset"]
+        DataCollator["DataCollatorForSeq2Seq"]
+        LoraConfig["LoraConfig"]
+        Trainer["Seq2SeqTrainer"]
+        save_adapter["Save adapter"]
+    end
+    app_py --> model_py
+    app_py --> rag_py
+    app_py --> db_py
+    app_py --> feedback_jsonl
+    model_py --> HF_Model
+    model_py --> LoRA_dir
+    rag_py --> train_jsonl
+    db_py --> employees_db
+    run_benchmark --> model_py
+    run_benchmark --> db_py
+    run_benchmark --> eval_jsonl
+    finetune_lora --> load_jsonl
+    load_jsonl --> Dataset
+    Dataset --> DataCollator
+    finetune_lora --> LoraConfig
+    DataCollator --> Trainer
+    LoraConfig --> Trainer
+    Trainer --> save_adapter
+    save_adapter --> LoRA_dir
+    merge_feedback --> feedback_jsonl
+    merge_feedback --> train_jsonl
+    seed_db --> db_py
+    compare_bench --> eval_jsonl
+    </div>
+  </section>
+
+  <section>
+    <h2>4. Data Flow (Sequence Diagram)</h2>
+    <p>Request flow: User → Gradio → DB init → RAG → Model → Validate → Execute → Response → Feedback.</p>
+    <div class="mermaid">
+sequenceDiagram
+    participant U as User
+    participant G as Gradio
+    participant M as model
+    participant R as rag
+    participant D as db
+    participant SQLite as employees.db
+
+    U->>G: Question + Execute?
+    G->>D: init_employee_db()
+    D->>SQLite: CREATE/seed
+    D-->>G: schema_prompt
+    G->>R: get_similar_examples
+    R-->>G: few-shot examples
+    G->>M: generate_sql
+    M-->>G: SQL
+    G->>M: validate_sql
+    alt Execute and valid
+        G->>D: run_select_query
+        D->>SQLite: SELECT
+        SQLite-->>D: rows
+        D-->>G: columns, rows
+    end
+    G-->>U: Schema, SQL, table, status
+    U->>G: Correct / Incorrect
+    G->>G: save_feedback
+    </div>
+  </section>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'neutral',
+      flowchart: { useMaxWidth: true, htmlLabels: true },
+      sequence: { useMaxWidth: true }
+    });
+  </script>
+</body>
+</html>
