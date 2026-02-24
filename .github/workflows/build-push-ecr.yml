@@ -17,6 +17,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check AWS secrets
+        run: |
+          if [ -z "${{ secrets.AWS_ACCESS_KEY_ID }}" ]; then
+            echo "::error::AWS_ACCESS_KEY_ID secret is missing!"
+            echo "Add it: Repo → Settings → Secrets and variables → Actions → New repository secret"
+            echo "Required: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY"
+            echo "Optional: AWS_REGION (default us-east-1)"
+            exit 1
+          fi
+          if [ -z "${{ secrets.AWS_SECRET_ACCESS_KEY }}" ]; then
+            echo "::error::AWS_SECRET_ACCESS_KEY secret is missing!"
+            exit 1
+          fi
+          echo "Secrets configured ✓"
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
