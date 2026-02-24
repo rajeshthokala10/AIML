@@ -6,6 +6,26 @@ Repository for AI/ML projects and demos.
 
 ## Projects
 
+### [AI-Medicine](AI-Medicine/) — Personalized health advice (Telugu + English)
+
+Personalized health advice for a **Telugu-trained** backend: nutrition, basic diseases, medicines, chronic level-1. **Input:** text, voice, or video. **Output:** text + voice. **UI:** Telugu or English.
+
+- **SLM** (e.g. TinyLlama) fine-tuned on **Telugu health content** (open source: MedMCQA-Indic, custom FAQs).
+- **Voice/video** → Whisper STT → model → text + TTS (Telugu/English).
+
+Quick start:
+
+```bash
+cd AI-Medicine
+pip install -r requirements.txt
+python scripts/prepare_telugu_health_data.py
+python app.py
+```
+
+See **[AI-Medicine/README.md](AI-Medicine/README.md)** and **[AI-Medicine/STEP_BY_STEP.md](AI-Medicine/STEP_BY_STEP.md)** for end-to-end steps, data sources, and optional fine-tuning.
+
+---
+
 ### [text-sql](text-sql/) — Text-to-SQL with LoRA fine-tuning
 
 Natural language → SQL using a small T5 model (`cssupport/t5-small-awesome-text-to-sql`), Gradio UI, and a SQLite employee database. Includes:

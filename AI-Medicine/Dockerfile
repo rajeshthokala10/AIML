@@ -49,12 +49,13 @@ COPY --from=frontend-builder /app/frontend/dist ./frontend_dist
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser
 
-# Single port: API + static frontend
+# Single port: API + static frontend (PORT from env for Railway, Render, Fly.io)
 ENV PORT=8000
 EXPOSE 8000
 
-# Health check
+# Health check (API at /api/health; uses PORT for cloud platforms)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')" || exit 1
+    CMD python -c "import os,urllib.request; urllib.request.urlopen('http://127.0.0.1:'+os.environ.get('PORT','8000')+'/api/health')" || exit 1
 
-CMD ["python", "-m", "uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
+# Shell form so PORT env is expanded (cloud platforms set PORT)
+CMD ["sh", "-c", "uvicorn api:app --host 0.0.0.0 --port ${PORT:-8000}"]

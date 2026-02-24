@@ -1,0 +1,15 @@
+# Render.com Blueprint — deploy AI-Medicine as a Web Service
+# Push to GitHub, connect repo at render.com, or use: render deploy
+# Docs: https://render.com/docs/docker
+
+services:
+  - type: web
+    name: ai-medicine
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free  # or starter for more resources
+    envVars:
+      - key: CORS_ALLOW_ALL
+        value: "1"  # Allow all origins when served from Render URL
+    healthCheckPath: /api/health

@@ -15,5 +15,8 @@ __pycache__/
 # OS
 .DS_Store
 
+# Logs
+*.log
+
 # Model checkpoints (large; re-run finetune_lora.py to regenerate)
 text-sql/models/

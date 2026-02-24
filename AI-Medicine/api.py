@@ -23,11 +23,13 @@ sys.path.insert(0, str(ROOT))
 # Production: serve frontend build from this directory (set by Docker / deployment)
 FRONTEND_DIST = ROOT / "frontend_dist"
 SERVE_FRONTEND = FRONTEND_DIST.is_dir() and (FRONTEND_DIST / "index.html").exists()
-CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173,http://127.0.0.1:3000").strip()
+
+# CORS: allow deployment URL (set CORS_ORIGINS env) + common dev origins
+CORS_ORIGINS = os.getenv("CORS_ORIGINS", "").strip()
 if CORS_ORIGINS:
     _cors_list = [o.strip() for o in CORS_ORIGINS.split(",") if o.strip()]
 else:
-    _cors_list = ["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173", "http://127.0.0.1:3000"]
+    _cors_list = ["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173", "http://127.0.0.1:3000", "http://localhost:8000", "http://127.0.0.1:8000"]
 
 # Lazy imports: inference (torch/transformers) and tts_stt (whisper) load only when /chat or /chat/voice is used.
 # This keeps API startup fast so /health and /diet-plan work immediately.
@@ -40,21 +42,24 @@ from backend.diet_plan import (
     get_foods_for_dropdown,
 )
 
-app = FastAPI(
+# Main app: serves frontend at / and mounts API at /api (frontend calls /api/chat, /api/diet-plan, etc.)
+app = FastAPI(title="AI-Medicine", version="1.0.0")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"] if os.getenv("CORS_ALLOW_ALL") == "1" else _cors_list,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# API sub-app: docs at /api/docs, routes at /api/chat, /api/diet-plan, /api/health
+api_app = FastAPI(
     title="AI-Medicine API",
     description="Personalized health advice (Telugu + English). Health Q&A (text/voice) and Diet Plan with South Indian foods.",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",
-)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=_cors_list,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
 )
 
 
@@ -96,8 +101,8 @@ def root():
         return FileResponse(FRONTEND_DIST / "index.html", media_type="text/html")
     return HTMLResponse(
         "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>AI-Medicine API</title></head><body style='font-family:system-ui;max-width:560px;margin:48px auto;padding:24px;'>"
-        "<h1>AI-Medicine API</h1><p>Backend is running. <strong>Swagger:</strong> <a href='/docs'>/docs</a> | "
-        "<strong>ReDoc:</strong> <a href='/redoc'>/redoc</a></p>"
+        "<h1>AI-Medicine API</h1><p>Backend is running. <strong>Swagger:</strong> <a href='/api/docs'>/api/docs</a> | "
+        "<strong>ReDoc:</strong> <a href='/api/redoc'>/api/redoc</a></p>"
         "<p><strong>To load the UI (Landing, Health Q&A, Diet Plan):</strong> in a separate terminal run "
         "<code>cd frontend && npm install && npm run dev</code>, then open <a href='http://localhost:5173'>http://localhost:5173</a>.</p>"
         "</body></html>",
@@ -105,13 +110,13 @@ def root():
     )
 
 
-@app.get("/health", tags=["Health"], summary="Health check", response_description="API status")
+@api_app.get("/health", tags=["Health"], summary="Health check", response_description="API status")
 def health():
     """Basic health check. Use this to validate the backend is running. Returns status ok."""
     return {"status": "ok"}
 
 
-@app.post("/chat", tags=["Health Q&A"], summary="Text chat", response_description="Model response text")
+@api_app.post("/chat", tags=["Health Q&A"], summary="Text chat", response_description="Model response text")
 def chat(question: str = Form(..., description="User question in Telugu or English"), lang: str = Form("te", description="Language: te (Telugu) or en (English)")):
     """Send a text question and get a text response. Lang selects output language (te/en). First call may load the model (1–2 min)."""
     from backend.inference import generate
@@ -120,7 +125,7 @@ def chat(question: str = Form(..., description="User question in Telugu or Engli
     return {"response": reply, "lang": lang_code}
 
 
-@app.post("/chat/voice", tags=["Health Q&A"], summary="Voice/video chat", response_description="Audio file or JSON with response text")
+@api_app.post("/chat/voice", tags=["Health Q&A"], summary="Voice/video chat", response_description="Audio file or JSON with response text")
 async def chat_voice(
     file: UploadFile = File(..., description="Audio (e.g. .wav, .mp3) or video (.mp4, .webm); audio is extracted for video"),
     lang: str = Form("te", description="Language: te or en"),
@@ -153,7 +158,7 @@ async def chat_voice(
             pass
 
 
-@app.get("/diet-plan/foods", tags=["Diet Plan"], summary="List foods for dropdown", response_description="List of foods with id, name_en, name_te, label")
+@api_app.get("/diet-plan/foods", tags=["Diet Plan"], summary="List foods for dropdown", response_description="List of foods with id, name_en, name_te, label")
 def diet_plan_foods(
     lang: str = Query("en", description="Language for labels: en or te"),
     meal_slot: str | None = Query(None, description="Filter by meal: morning, mid_morning, lunch, evening, dinner, late_night"),
@@ -162,7 +167,7 @@ def diet_plan_foods(
     return {"foods": get_foods_for_dropdown(lang, meal_slot=meal_slot)}
 
 
-@app.post("/diet-plan", tags=["Diet Plan"], summary="Get diet plan and chart", response_description="Chart, summary, recommendations, consumed/targets")
+@api_app.post("/diet-plan", tags=["Diet Plan"], summary="Get diet plan and chart", response_description="Chart, summary, recommendations, consumed/targets")
 def diet_plan(body: DietPlanRequest):
     """Compute daily nutrition from age, activity, and meals. Meals can be free text or list of food ids per slot. Returns chart (EN/Telugu), summary, recommendations, and optional AI suggestion."""
     age = max(1, min(120, body.age or 30))
@@ -219,6 +224,10 @@ def diet_plan(body: DietPlanRequest):
         "consumed": consumed,
         "targets": targets,
     }
+
+
+# Mount API at /api (frontend calls /api/chat, /api/diet-plan, /api/health)
+app.mount("/api", api_app)
 
 
 # --- Production: serve built frontend (SPA) when frontend_dist is present ---

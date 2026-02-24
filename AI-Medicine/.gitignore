@@ -1,0 +1,4 @@
+# AWS credentials - NEVER commit
+aws_credentials
+*.pem
+ec2-run-instructions.sh

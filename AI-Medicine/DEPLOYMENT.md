@@ -1,6 +1,6 @@
 # AI-Medicine: Deployment Guide
 
-Best-practice packaging and deployment for **AWS** and **open-source / self-hosted** environments. The app runs as a **single container**: FastAPI backend + built React frontend on one port (8000).
+Best-practice packaging and deployment for **open-source platforms** (Railway, Render, Fly.io), **AWS**, and **self-hosted** environments. The app runs as a **single container**: FastAPI backend + built React frontend on one port.
 
 ---
 
@@ -11,7 +11,45 @@ cd AI-Medicine
 docker compose up -d
 ```
 
-Open **http://localhost:8000** — UI and API (Swagger at `/docs`) are served from the same origin.
+Open **http://localhost:8000** — UI and API (Swagger at `/api/docs`) are served from the same origin.
+
+---
+
+## Deploy to a public URL (free tiers)
+
+| Platform | Config file | Deploy | Get URL |
+|----------|-------------|--------|---------|
+| **Railway** | `railway.json` | Connect GitHub → Auto-deploy | `*.railway.app` |
+| **Render** | `render.yaml` | Connect GitHub or `render deploy` | `*.onrender.com` |
+| **Fly.io** | `fly.toml` | `fly launch` then `fly deploy` | `*.fly.dev` |
+
+### Railway
+
+1. Push code to GitHub.
+2. Go to [railway.app](https://railway.app) → New Project → Deploy from GitHub.
+3. Select your repo and the `AI-Medicine` directory (or root if repo is AI-Medicine).
+4. Railway detects the Dockerfile and deploys. Set env `CORS_ALLOW_ALL=1` if needed.
+5. Your app gets a URL like `https://ai-medicine-production-xxxx.up.railway.app`.
+
+### Render
+
+1. Push code to GitHub.
+2. Go to [render.com](https://render.com) → New → Web Service.
+3. Connect your repo. Render detects `render.yaml` (Blueprint) or set **Runtime: Docker** manually.
+4. Deploy. Your app gets a URL like `https://ai-medicine.onrender.com`.
+5. **Note:** Free tier spins down after ~15 min idle; first request may take 30–60s to wake.
+
+### Fly.io
+
+```bash
+cd AI-Medicine
+fly auth login
+fly launch   # first time: creates app, use existing fly.toml
+fly deploy   # subsequent deploys
+fly open     # open your URL (e.g. https://ai-medicine.fly.dev)
+```
+
+Set `CORS_ALLOW_ALL=1` in env (already in `fly.toml`). Free tier includes 3 shared VMs; app may sleep when idle.
 
 ---
 
@@ -21,14 +59,18 @@ Open **http://localhost:8000** — UI and API (Swagger at `/docs`) are served fr
 |----------|--------|
 | **Dockerfile** | Multi-stage: build frontend (Vite/React), then backend (Python/FastAPI) + static files. Single image, one port. |
 | **docker-compose.yml** | Run the app locally or on any host; optional volume for models. |
+| **railway.json** | Railway deploy config (Dockerfile, health check). |
+| **render.yaml** | Render Blueprint for Docker web service. |
+| **fly.toml** | Fly.io app config (port, health check, VM size). |
 | **.dockerignore** | Excludes `.venv`, `node_modules`, docs, logs so the image stays small. |
 | **.env.example** | Template for `CORS_ORIGINS`, `VITE_API_URL` (and optional `PORT`). |
 
 **Design choices:**
 
-- **Single port (8000):** API at `/api/*`, `/docs`, `/health`; frontend at `/`, `/diet-plan`, etc. No CORS issues in production.
-- **CORS from env:** `CORS_ORIGINS` used when the frontend is served from another origin (e.g. dev).
-- **Non-root user** in the container; **health check** on `/health`.
+- **Single port:** API at `/api/*` (e.g. `/api/chat`, `/api/diet-plan`, `/api/health`); frontend at `/`, `/diet-plan`, etc. No CORS issues in production.
+- **PORT from env:** Railway, Render, and Fly.io set `PORT`; the container uses it automatically.
+- **CORS:** Set `CORS_ALLOW_ALL=1` to allow any origin, or `CORS_ORIGINS=https://your-app.fly.dev` for specific domains.
+- **Non-root user** in the container; **health check** on `/api/health`.
 
 ---
 
@@ -91,7 +133,7 @@ Ensure `backend/model.py` and inference code load from `/app/models` (default pr
 **Task definition (relevant parts):**
 
 - Container port: **8000**
-- Health check: `GET http://localhost:8000/health` (or use ALB health check on the same path).
+- Health check: `GET http://localhost:8000/api/health` (or use ALB health check on the same path).
 - Env: `CORS_ORIGINS` if needed.
 
 ### Option C: EC2 + Docker
@@ -121,8 +163,9 @@ Copy `.env.example` to `.env` and set values for local or Compose; for AWS, set 
 
 ## 4. Health check and monitoring
 
-- **Endpoint:** `GET /health` → `{"status":"ok"}`.
-- **Docker:** `HEALTHCHECK` in the Dockerfile hits `/health` inside the container.
+- **Endpoint:** `GET /api/health` → `{"status":"ok"}`.
+- **Docker:** `HEALTHCHECK` in the Dockerfile hits `/api/health` inside the container.
+- **Railway / Render / Fly.io:** Config files use `/api/health` for health checks.
 - **AWS:** Use the same URL for ALB/App Runner health checks so unhealthy tasks are replaced.
 
 ---
