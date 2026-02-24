@@ -21,9 +21,8 @@ CREDS_FILE="$SCRIPT_DIR/aws_credentials"
 if [[ ! -f "$CREDS_FILE" ]]; then
   echo "ERROR: aws_credentials file not found at $CREDS_FILE"
   echo "Create it with format:"
-  echo "  [default]"
-  echo "  aws_access_key_id = AKIAXZIDRY3N7HMW3HYR"
-  echo "  aws_secret_access_key = d2C6YfSq9EdojhXh7E61Jgf4COrBjq7j7bZxr1yk"
+  echo "  aws_access_key_id = YOUR_ACCESS_KEY"
+  echo "  aws_secret_access_key = YOUR_SECRET_KEY"
   echo "  region = us-east-1"
   exit 1
 fi
