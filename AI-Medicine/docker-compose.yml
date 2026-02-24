@@ -1,0 +1,29 @@
+# AI-Medicine: run backend + frontend in Docker (single container)
+#
+# Build and run:
+#   docker compose up -d
+#
+# View logs:
+#   docker compose logs -f
+#
+# Stop:
+#   docker compose down
+#
+# Then open: http://localhost:8000
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: "/api"
+    container_name: ai-medicine
+    ports:
+      - "8000:8000"
+    environment:
+      - CORS_ORIGINS=http://localhost:8000,http://127.0.0.1:8000
+    restart: unless-stopped
+    # Optional: mount models from host (uncomment if you keep models outside the image)
+    # volumes:
+    #   - ./models:/app/models:ro

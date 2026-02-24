@@ -1,0 +1,41 @@
+# Git and IDE
+.git
+.gitignore
+.cursor
+.vscode
+.idea
+*.swp
+*.swo
+.DS_Store
+
+# Python
+.venv
+venv
+__pycache__
+*.py[cod]
+*.egg-info
+.pytest_cache
+.coverage
+htmlcov
+*.log
+
+# Frontend (we build inside Docker)
+frontend/node_modules
+frontend/dist
+frontend/.env
+frontend/.env.*
+frontend/*.log
+frontend/npm-debug.log*
+
+# Docs and local-only
+*.md
+!README.md
+SYSTEM_DIAGRAMS.html
+STEP_BY_STEP.md
+DATA_SOURCES*.md
+run.sh
+backend.log
+frontend.log
+
+# Optional: large model checkpoints (mount at runtime or use smaller image)
+# models/

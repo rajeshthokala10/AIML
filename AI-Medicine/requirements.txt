@@ -1,0 +1,39 @@
+# AI-Medicine: Personalized health advice (Telugu + English)
+# Backend: SLM + STT/TTS; UI: Gradio
+
+# Core ML (numpy<2 for pandas/scipy/sklearn ABI compatibility in many envs)
+numpy>=1.24.0,<2
+torch>=2.0.0
+transformers>=4.40.0
+scipy>=1.10.0
+scikit-learn>=1.3.0
+peft>=0.10.0
+accelerate>=0.25.0
+datasets>=2.14.0
+
+# UI
+gradio>=4.0.0
+
+# Optional API
+fastapi>=0.100.0
+uvicorn>=0.22.0
+python-multipart>=0.0.6
+
+# Speech-to-text (voice/video input)
+openai-whisper>=20231117
+
+# Text-to-speech (voice output) — Telugu + English
+# Option 1: gTTS (simple, free; Telugu supported)
+gTTS>=2.3.0
+# Option 2: Coqui TTS (uncomment if using)
+# TTS>=0.22.0
+
+# Video → audio extraction
+ffmpeg-python>=0.2.0
+
+# Config and utilities
+pyyaml>=6.0
+pandas>=2.0.0
+
+# Optional: translation (English ↔ Telugu) at inference
+# transformers + NLLB or indic-trans

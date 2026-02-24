@@ -1,0 +1,23 @@
+# AI-Medicine: LoRA fine-tuning on Telugu health data
+
+base_model: "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+train_file: "data/processed/telugu_health_train.jsonl"
+eval_file: null  # optional
+output_dir: "models/ai_medicine_telugu_lora"
+
+# LoRA
+lora_r: 16
+lora_alpha: 32
+lora_dropout: 0.05
+target_modules: ["q_proj", "v_proj"]
+
+# Training
+epochs: 3
+batch_size: 2
+gradient_accumulation_steps: 4
+learning_rate: 2.0e-5
+max_length: 512
+warmup_ratio: 0.1
+
+# Optional 4-bit (QLoRA) to save memory
+use_4bit: false

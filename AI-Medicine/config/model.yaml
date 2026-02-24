@@ -1,0 +1,25 @@
+# AI-Medicine: Model and inference config
+# SLM for Telugu health advice (nutrition, basic diseases, medicines, chronic level-1)
+
+# Base SLM (Hugging Face ID or local path)
+model_name: "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+
+# Fine-tuned adapter (optional; set to null to use base only)
+adapter_path: "models/ai_medicine_telugu_lora"
+
+# Device: "cuda", "cpu", or "auto"
+device: "auto"
+
+# Generation
+max_new_tokens: 512
+temperature: 0.7
+top_p: 0.9
+do_sample: true
+
+# System prompt (Telugu) — scope of advice
+system_prompt_te: |
+  మీరు ఒక సాధారణ ఆరోగ్య సలహా సహాయకుడు. పోషకాహారం, సాధారణ అనారోగ్యాలు, మందులు మరియు దీర్ఘకాలిక సమస్యలకు మొదటి స్థాయి చికిత్స గురించి సమాచారం మాత్రమే ఇవ్వండి. ఇది వైద్య నిర్ణయం కాదు; తీవ్రమైన లక్షణాలకు వైద్యుడిని సంప్రదించండి.
+
+# System prompt (English)
+system_prompt_en: |
+  You are a general health advice assistant. Provide information only on nutrition, basic illnesses, medicines, and level-1 treatment for chronic issues. This is not medical diagnosis; consult a doctor for serious symptoms.

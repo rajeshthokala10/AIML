@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI-Medicine — System Diagrams</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 24px; background: #f8fafc; color: #1e293b; }
+    h1 { color: #0f766e; margin-bottom: 8px; }
+    h2 { color: #0d9488; margin-top: 32px; margin-bottom: 12px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; }
+    .subtitle { color: #64748b; margin-bottom: 24px; }
+    .diagram { background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 24px; margin-bottom: 32px; overflow-x: auto; }
+    .mermaid { display: flex; justify-content: center; }
+    .mermaid svg { max-width: 100%; }
+    footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <h1>AI-Medicine — System Diagrams</h1>
+  <p class="subtitle">High-level and low-level technical architecture. Open this file in a browser to view diagrams.</p>
+
+  <h2>1. High-level system diagram</h2>
+  <p>User flows: Landing → Health Q&A (text/voice) or Diet Plan. React UI talks to FastAPI; backend uses SLM, TTS/STT, and diet data.</p>
+  <div class="diagram">
+    <div class="mermaid">
+flowchart TB
+  U((User))
+
+  subgraph Frontend["Frontend - React / Vite :5173"]
+    L[Landing]
+    H[Health Q&A]
+    D[Diet Plan]
+  end
+
+  subgraph API["Backend API - FastAPI :8000"]
+    E1["GET /health"]
+    E2["POST /chat"]
+    E3["POST /chat/voice"]
+    E4["GET /diet-plan/foods"]
+    E5["POST /diet-plan"]
+  end
+
+  subgraph Services["Backend services"]
+    INF[Inference - SLM]
+    TTS[TTS / STT - Whisper]
+    DP[Diet Plan - chart and recommendations]
+  end
+
+  subgraph Data["Data and config"]
+    MOD[Model weights]
+    FOOD[South Indian foods JSON]
+    CFG[model.yaml]
+  end
+
+  U --> Frontend
+  Frontend -->|/api proxy| API
+  E2 --> INF
+  E3 --> TTS
+  E3 --> INF
+  E4 --> DP
+  E5 --> DP
+  INF --> MOD
+  INF --> CFG
+  DP --> FOOD
+  DP --> INF
+    </div>
+  </div>
+
+  <h2>2. Low-level system diagram</h2>
+  <p>Component-level flow: API routes, backend modules (model, inference, tts_stt, diet_plan), and data files.</p>
+  <div class="diagram">
+    <div class="mermaid">
+flowchart LR
+  subgraph Client["Client (browser)"]
+    React[React App\n:5173]
+  end
+
+  subgraph FastAPI["api.py"]
+    CORS[CORS middleware]
+    health["GET /health"]
+    chat["POST /chat\nForm: question, lang"]
+    voice["POST /chat/voice\nFile + lang + return_audio"]
+    foods["GET /diet-plan/foods\n?lang, meal_slot"]
+    plan["POST /diet-plan\nJSON body"]
+  end
+
+  subgraph Backend["backend/"]
+    model[model.py\nload SLM]
+    inference[inference.py\ngenerate]
+    tts_stt[tts_stt.py\nWhisper STT\nTTS]
+    diet_plan[diet_plan.py\nload_food_db\nget_foods_for_dropdown\nbuild_chart_and_totals\ngenerate_recommendations\ngenerate_ai_diet_suggestion]
+  end
+
+  subgraph Storage["Data & config"]
+    si[south_indian_foods.json]
+    fn[food_nutrients.json]
+    cfg[config/model.yaml]
+    raw[data/raw\nTelugu health JSONL]
+  end
+
+  React -->|fetch /api/health| health
+  React -->|fetch /api/chat| chat
+  React -->|fetch /api/chat/voice| voice
+  React -->|fetch /api/diet-plan/foods| foods
+  React -->|fetch /api/diet-plan| plan
+
+  health --> CORS
+  chat --> inference
+  voice --> tts_stt
+  voice --> inference
+  foods --> diet_plan
+  plan --> diet_plan
+
+  inference --> model
+  model --> cfg
+  diet_plan --> si
+  diet_plan --> fn
+  diet_plan --> inference
+    </div>
+  </div>
+
+  <h2>3. Data flow — Health Q&A (text)</h2>
+  <div class="diagram">
+    <div class="mermaid">
+sequenceDiagram
+  participant U as User
+  participant R as React
+  participant A as FastAPI
+  participant I as inference
+  participant M as model
+
+  U->>R: Enter question, select lang
+  R->>A: POST /chat (question, lang)
+  A->>I: generate(question, lang)
+  I->>M: load model if needed
+  M-->>I: model
+  I-->>A: response text
+  A-->>R: { response, lang }
+  R-->>U: Show response
+    </div>
+  </div>
+
+  <h2>4. Data flow — Diet Plan</h2>
+  <div class="diagram">
+    <div class="mermaid">
+sequenceDiagram
+  participant U as User
+  participant R as React
+  participant A as FastAPI
+  participant D as diet_plan
+
+  U->>R: Age, activity, lang, meals per slot
+  R->>A: GET /diet-plan/foods (lang, meal_slot)
+  A->>D: get_foods_for_dropdown
+  D-->>A: foods[]
+  A-->>R: { foods }
+  R-->>U: Populate dropdowns
+
+  U->>R: Submit diet form
+  R->>A: POST /diet-plan (body)
+  A->>D: build_chart_and_totals_from_selections
+  A->>D: generate_recommendations
+  A->>D: generate_ai_diet_suggestion
+  D-->>A: chart, summary, recommendations, ai_suggestion
+  A-->>R: { chart, summary, recommendations, ... }
+  R-->>U: Chart + recommendations (EN/Telugu)
+    </div>
+  </div>
+
+  <footer>
+    AI-Medicine system diagrams. Generated for technical documentation. Backend: FastAPI, SLM, Whisper/TTS, South Indian diet data. Frontend: React (Vite).
+  </footer>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'neutral',
+      flowchart: { useMaxWidth: true, htmlLabels: true },
+      sequence: { useMaxWidth: true }
+    });
+  </script>
+</body>
+</html>

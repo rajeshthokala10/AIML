@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased;
+}
+
+/* AI Doctor theme: soft teal/blue gradient background */
+.app-theme {
+  background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 35%, #f0f9ff 70%, #f0fdfa 100%);
+  min-height: 100vh;
+}
+
+/* Subtle medical/health accent */
+@layer components {
+  .card-doctor {
+    @apply rounded-2xl border border-slate-200/80 bg-white/90 shadow-lg backdrop-blur;
+  }
+}
+
+/* Landing: AI + Doctor theme — medical + AI/tech background images */
+.landing-bg {
+  background-color: #0f766e;
+  background-image:
+    linear-gradient(135deg, rgba(6, 95, 70, 0.78) 0%, rgba(8, 145, 178, 0.72) 50%, rgba(6, 95, 70, 0.8) 100%),
+    url("https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=1920&q=80"),
+    url("https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1920&q=80");
+  background-size: cover, cover, cover;
+  background-position: center, center, center;
+  background-repeat: no-repeat, no-repeat, no-repeat;
+}
