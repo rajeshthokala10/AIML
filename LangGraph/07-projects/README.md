@@ -68,6 +68,13 @@ Hands-on projects to solidify your LangGraph skills.
 
 ---
 
+## Included Practice Projects
+
+| Project | Path | Level |
+|---------|------|-------|
+| Chatbot | `chatbot/main.py` | Beginner |
+| Tool Agent | `tool_agent/main.py` | Intermediate |
+
 ## Project Template
 
 ```python

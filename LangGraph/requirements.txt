@@ -1,11 +1,15 @@
 # LangGraph learning environment
 langgraph>=0.2.0
 langchain>=0.3.0
+langchain-core>=0.3.0
 langchain-openai>=0.2.0
 langchain-anthropic>=0.2.0
 
 # Optional: for RAG and tools
 langchain-community>=0.3.0
+
+# For 06-production (API, tests)
+# fastapi uvicorn pytest
 
 # Optional: for observability
 # langsmith>=0.1.0

@@ -15,14 +15,23 @@ A structured learning roadmap for mastering LangGraph and building production-re
 ```
 langgraph/
 ├── README.md                    # This file - roadmap overview
+├── requirements.txt             # Dependencies
+├── resources.md                 # Links, courses, docs
 ├── 01-prerequisites/             # Foundations before LangGraph
+│   └── practice.py              # Async, TypedDict, messages, tools
 ├── 02-fundamentals/              # Core LangGraph concepts
+│   └── practice.py              # StateGraph, nodes, conditional edges
 ├── 03-state-and-memory/          # State management & memory
-├── 04-agent-patterns/            # ReAct, ReWOO, multi-agent, etc.
-├── 05-advanced-features/         # Human-in-loop, checkpointing, streaming
-├── 06-production/               # Deployment, observability, scaling
-├── 07-projects/                 # Hands-on project ideas
-└── resources.md                 # Links, courses, docs
+│   └── practice.py              # MemorySaver, multi-turn, reducers
+├── 04-agent-patterns/            # ReAct, tools, multi-agent
+│   └── practice.py              # create_react_agent with tools
+├── 05-advanced-features/         # Streaming, subgraphs, fallback
+│   └── practice.py              # Streaming, subgraph, error handling
+├── 06-production/               # Deployment, observability
+│   └── practice.py              # Unit tests, FastAPI wrapper
+└── 07-projects/                 # Hands-on projects
+    ├── chatbot/                 # Simple chatbot with memory
+    └── tool_agent/              # ReAct agent with tools
 ```
 
 ---
@@ -73,6 +82,26 @@ graph.invoke({"messages": [{"role": "user", "content": "hi!"}]})
 - **Human-in-the-loop** – Interrupts and approvals
 - **Streaming** – Token and event streaming
 - **Durable execution** – Long-running, fault-tolerant agents
+
+---
+
+## Running Practice Code
+
+```bash
+pip install -r requirements.txt
+
+# Run each section's practice (from langgraph/ root)
+python 01-prerequisites/practice.py
+python 02-fundamentals/practice.py
+python 03-state-and-memory/practice.py
+python 04-agent-patterns/practice.py   # Needs OPENAI_API_KEY for full demo
+python 05-advanced-features/practice.py
+python 06-production/practice.py
+
+# Projects
+python 07-projects/chatbot/main.py
+python 07-projects/tool_agent/main.py  # Needs OPENAI_API_KEY
+```
 
 ---
 
