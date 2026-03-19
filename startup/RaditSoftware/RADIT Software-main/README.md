@@ -1,1 +1,0 @@
-# RAdit Software
