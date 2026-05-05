@@ -1,0 +1,100 @@
+# =============================================================================
+# GraphRAG configuration
+# Override anything here; secrets (API keys) live in .env
+# =============================================================================
+
+project:
+  name: "GraphRAG-KG"
+  working_dir: "."
+  cache_dir: "./cache"
+  data_dir: "./data"
+
+# ---------- 1. Query Understanding ------------------------------------------
+query_understanding:
+  llm_model: "gpt-4o-mini"
+  temperature: 0.0
+  max_expansions: 4          # how many paraphrases / sub-queries to generate
+  extract_entities: true     # use LLM to pull entities from the question
+
+# ---------- 2. NetworkX Knowledge Graph -------------------------------------
+knowledge_graph:
+  builder: "llm"             # "llm" | "heuristic"
+  llm_model: "gpt-4o-mini"
+  relation_types:
+    - CAUSED_BY
+    - PART_OF
+    - REQUIRES
+    - PRECEDES
+    - MITIGATES
+    - SYMPTOM_OF
+    - RELATED_TO
+  graph_expand_hops: 2       # how far to walk neighbours during retrieval
+  cause_relations:           # used by the cause-ranking step
+    - CAUSED_BY
+    - SYMPTOM_OF
+    - MITIGATES
+
+# ---------- 3. Retrievers ---------------------------------------------------
+chunking:
+  chunk_size: 800
+  chunk_overlap: 120
+
+lexical:
+  enabled: true
+  top_k: 20
+
+bm25:
+  enabled: true
+  top_k: 20
+  k1: 1.5
+  b: 0.75
+
+dense:
+  enabled: true
+  top_k: 20
+  embedding_model: "sentence-transformers/all-MiniLM-L6-v2"
+  qdrant:
+    location: ":memory:"     # in-process; swap for "http://localhost:6333" if you run a server
+    collection: "graphrag_chunks"
+    distance: "Cosine"
+
+graph_retrieval:
+  enabled: true
+  top_k: 15
+
+# ---------- 4. Reciprocal Rank Fusion ---------------------------------------
+rrf:
+  k: 60                      # standard RRF damping constant
+  top_k_after_fusion: 25
+
+# ---------- 5. Cross-encoder Re-ranking -------------------------------------
+reranker:
+  enabled: true
+  model: "cross-encoder/ms-marco-MiniLM-L-6-v2"
+  top_k_after_rerank: 10
+
+# ---------- 6. Cause-ranking / Evidence -------------------------------------
+cause_ranking:
+  enabled: true
+  top_k_causes: 5
+  weight_graph: 0.6          # importance of KG causal proximity
+  weight_text: 0.4           # importance of cross-encoder relevance score
+
+# ---------- 7. Draft Procedure ----------------------------------------------
+draft:
+  llm_model: "gpt-4o-mini"
+  temperature: 0.2
+  max_steps: 8
+
+# ---------- 8. Self-Critic --------------------------------------------------
+self_critic:
+  enabled: true
+  llm_model: "gpt-4o-mini"
+  temperature: 0.0
+  max_revisions: 2           # if the critique fails, draft will be re-run up to this many times
+  pass_threshold: 0.75       # critic score above which we stop revising
+
+# ---------- LangSmith / Tracing --------------------------------------------
+langsmith:
+  enabled: true              # also requires LANGCHAIN_API_KEY in .env
+  project: "GraphRAG-KG"

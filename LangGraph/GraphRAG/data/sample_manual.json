@@ -1,0 +1,31 @@
+{
+  "manual": "Industrial Pump Troubleshooting Manual",
+  "version": "2.4",
+  "sections": [
+    {
+      "id": "S-001",
+      "title": "Pump fails to start",
+      "content": "If the pump fails to start, this is most often CAUSED_BY a tripped circuit breaker, a blown fuse, or a faulty motor starter. First, verify electrical supply at the control panel. If voltage is correct, inspect the thermal overload relay; a tripped overload is a common SYMPTOM_OF a seized impeller or excessive load. To MITIGATE, reset the breaker, replace the fuse, or contact the electrician for further inspection."
+    },
+    {
+      "id": "S-002",
+      "title": "Excessive vibration",
+      "content": "Excessive vibration in centrifugal pumps is CAUSED_BY misalignment between the motor and pump shaft, worn bearings, or cavitation. Cavitation itself is CAUSED_BY insufficient NPSHa (Net Positive Suction Head available). Continuous high vibration can lead to bearing failure and is a SYMPTOM_OF imminent mechanical breakdown. MITIGATE by re-aligning the coupling, replacing bearings, and ensuring suction conditions meet NPSHr."
+    },
+    {
+      "id": "S-003",
+      "title": "Loss of prime",
+      "content": "Loss of prime is CAUSED_BY air leaks on the suction side, a clogged foot valve, or low liquid level in the source tank. The pump will run but deliver no flow. This is a SYMPTOM_OF cavitation onset and may damage the impeller. MITIGATE by inspecting suction piping for leaks, cleaning the foot valve, and topping up the source tank before re-priming."
+    },
+    {
+      "id": "S-004",
+      "title": "Overheating motor",
+      "content": "Motor overheating is CAUSED_BY low voltage, blocked cooling fan, or operating beyond duty point. Sustained overheating REQUIRES immediate shutdown. Check ambient temperature, clean cooling fins, and verify the motor is not overloaded. Overheating is a SYMPTOM_OF poor ventilation or undersized motor."
+    },
+    {
+      "id": "S-005",
+      "title": "Routine maintenance",
+      "content": "Routine maintenance PRECEDES major overhauls and PART_OF preventive maintenance plan. It includes monthly bearing greasing, quarterly alignment checks, and annual seal replacement. Skipping maintenance is RELATED_TO most premature failures listed in this manual."
+    }
+  ]
+}
