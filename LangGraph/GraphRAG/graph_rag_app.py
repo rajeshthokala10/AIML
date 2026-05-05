@@ -369,7 +369,20 @@ def build_qdrant(chunks: List[Document], cfg: Dict[str, Any]):
 
     embedder = get_embedder(cfg["dense"]["embedding_model"])
     qcfg = cfg["dense"]["qdrant"]
-    client = QdrantClient(location=qcfg["location"])
+
+    # Env vars win over config.yaml, which lets the same image switch from
+    # the in-process default (":memory:") to the Qdrant container shipped in
+    # docker-compose without editing config.yaml.
+    location = os.getenv("QDRANT_URL") or qcfg["location"]
+    api_key = os.getenv("QDRANT_API_KEY")
+
+    if isinstance(location, str) and location.startswith(("http://", "https://")):
+        client = QdrantClient(url=location, api_key=api_key) if api_key else QdrantClient(url=location)
+        log.info("Qdrant: using HTTP server at %s", location)
+    else:
+        client = QdrantClient(location=location)
+        log.info("Qdrant: using local mode (%s)", location)
+
     collection = qcfg["collection"]
     dim = len(embedder.embed_query("dim probe"))
 
@@ -933,7 +946,35 @@ def main():
                 (data_dir / f.name).write_bytes(f.getbuffer())
             st.success(f"Saved {len(uploaded)} file(s) to {data_dir}")
 
-        if st.button("Build / Rebuild index", type="primary"):
+        # Show what will actually be ingested (every PDF / Excel / JSON in data_dir)
+        ingestible_suffixes = {".pdf", ".xlsx", ".xls", ".json"}
+        discovered = sorted(
+            [
+                p
+                for p in data_dir.glob("**/*")
+                if p.is_file() and p.suffix.lower() in ingestible_suffixes
+            ]
+        )
+        if discovered:
+            st.markdown("**Files discovered in `data/` (will be ingested):**")
+            st.dataframe(
+                pd.DataFrame(
+                    [
+                        {
+                            "file": p.relative_to(data_dir).as_posix(),
+                            "type": p.suffix.lower().lstrip("."),
+                            "size_kb": round(p.stat().st_size / 1024, 1),
+                        }
+                        for p in discovered
+                    ]
+                ),
+                hide_index=True,
+                use_container_width=True,
+            )
+        else:
+            st.warning(f"No PDF / Excel / JSON files found in {data_dir}.")
+
+        if st.button("Build / Rebuild index", type="primary", disabled=not discovered):
             with st.spinner("Loading, chunking, embedding, building KG..."):
                 st.session_state["ctx"] = build_context(cfg, data_dir)
                 st.session_state["pipeline"] = build_pipeline(st.session_state["ctx"])
@@ -949,6 +990,26 @@ def main():
             c1, c2 = st.columns(2)
             c1.metric("KG nodes", ctx["kg"].number_of_nodes())
             c2.metric("KG edges", ctx["kg"].number_of_edges())
+
+            # Per-source / per-format breakdown so users can verify each file
+            # actually contributed chunks to the index.
+            breakdown = (
+                pd.DataFrame(
+                    [
+                        {
+                            "source": c.metadata.get("source", "?"),
+                            "type": c.metadata.get("type", "?"),
+                        }
+                        for c in ctx["chunks"]
+                    ]
+                )
+                .groupby(["type", "source"])
+                .size()
+                .reset_index(name="chunks")
+                .sort_values(["type", "source"])
+            )
+            with st.expander("Chunks per source", expanded=True):
+                st.dataframe(breakdown, hide_index=True, use_container_width=True)
 
     # ---- Query tab ---------------------------------------------------------
     with tab_query:

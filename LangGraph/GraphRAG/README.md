@@ -62,12 +62,41 @@ GraphRAG/
 ├── .env.example         # template for API keys + LangSmith
 ├── requirements.txt
 ├── data/                # drop your PDFs / Excel / JSON here
-│   └── sample_manual.json
+│   ├── sample_manual.json          # pump troubleshooting (JSON)
+│   ├── sample_parts_catalog.xlsx   # spare-parts catalog (Excel, 2 sheets)
+│   ├── sample_safety_manual.pdf    # LOTO / electrical safety (PDF)
+│   └── _generate_samples.py        # regenerates the .xlsx and .pdf above
 ├── cache/               # local persistence (auto-created)
+├── Dockerfile           # multi-stage build of the Streamlit app
+├── docker-compose.yml   # full stack: graphrag + qdrant
+├── .dockerignore
 └── README.md
 ```
 
 ## Quick start
+
+### Option A &mdash; Docker (recommended)
+
+Brings up the Streamlit app **and** a real Qdrant server on a private network,
+with persistent volumes for vectors and the HuggingFace model cache.
+
+```bash
+cd LangGraph/GraphRAG
+
+cp .env.example .env
+# edit .env: set OPENAI_API_KEY (and optionally LANGCHAIN_API_KEY)
+
+docker compose up --build
+```
+
+- Streamlit UI: http://localhost:8501
+- Qdrant dashboard: http://localhost:6333/dashboard
+
+The compose file injects `QDRANT_URL=http://qdrant:6333`, so the app talks to
+the Qdrant container instead of running it in-process. To stop:
+`docker compose down` (add `-v` to also wipe the qdrant volume).
+
+### Option B &mdash; Local virtualenv
 
 ```bash
 cd LangGraph/GraphRAG
@@ -142,14 +171,20 @@ So the retrieval, fusion, and KG halves of the pipeline work even with zero exte
 
 ## Switching to a real Qdrant server
 
+The cleanest option is `docker compose up` (see Quick start &mdash; Option A).
+For a manual setup, either edit `config.yaml`:
+
 ```yaml
 dense:
   qdrant:
     location: "http://localhost:6333"
 ```
 
-Run a local Qdrant in Docker:
+or set the env var (which wins over `config.yaml`):
 
 ```bash
+export QDRANT_URL=http://localhost:6333
+# export QDRANT_API_KEY=...   # only if your Qdrant requires auth
 docker run -p 6333:6333 -p 6334:6334 qdrant/qdrant
+streamlit run graph_rag_app.py
 ```

@@ -21,6 +21,10 @@ pypdf>=4.3.1
 pandas>=2.2.2
 openpyxl>=3.1.5
 
+# Optional: only required to regenerate data/sample_safety_manual.pdf
+# via data/_generate_samples.py. The runtime app does not need it.
+# reportlab>=4.2
+
 # UI / config / utils
 streamlit>=1.39.0
 streamlit-agraph>=0.0.45

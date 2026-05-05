@@ -1,0 +1,32 @@
+# Build context hygiene - keep the image small and avoid leaking secrets.
+.env
+.env.local
+
+# Python local environments / caches
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# Local artifacts and runtime caches (mounted as volumes by compose anyway)
+cache/
+.cache/
+data/_generate_samples.py
+
+# Editor / OS cruft
+.DS_Store
+.idea/
+.vscode/
+
+# Node / TypeScript (in case anything sneaks in)
+node_modules/
+
+# Git
+.git/
+.gitignore
