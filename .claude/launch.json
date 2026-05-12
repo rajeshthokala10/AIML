@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "hybrid-graphrag",
+      "runtimeExecutable": "streamlit",
+      "runtimeArgs": ["run", "codebase/hybrid-graphrag-manufacturing/app.py", "--server.port", "8501", "--server.headless", "true"],
+      "port": 8501
+    },
+    {
+      "name": "apm-angular",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["ng", "serve", "--open"],
+      "port": 4200
+    },
+    {
+      "name": "radit-static",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8080", "-d", "startup/RaditSoftware/RADIT Software-main"],
+      "port": 8080
+    }
+  ]
+}
